@@ -11,12 +11,10 @@ class Circle {
         xpos = _xpos;
         ypos = _ypos;
         radius = _radius;
-
     }
 
     void draw() {
 
-        //draw circle
         pushMatrix();
         smooth();
         ellipseMode(CENTER);

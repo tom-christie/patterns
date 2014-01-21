@@ -8,10 +8,7 @@ class Line{
     
     float x1, y1, x2, y2;
     
-    Line(){
-        
-        
-        
+    Line(){ 
     }
     
     void init(float _x1, float _y1, float _x2, float _y2){
