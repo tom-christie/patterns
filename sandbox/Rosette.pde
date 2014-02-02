@@ -138,8 +138,8 @@ class Rosette {
         for (int i=0; i<lines_count; i++) {
             lines[i].draw();
         }
-
         draw_rosette_lines();
+        
         draw_petals_and_diamonds();
         draw_star();
         
@@ -478,14 +478,9 @@ class Rosette {
             ypos = mouseY;
 
 
-            outer_circle = new Circle();
-            outer_circle.init(xpos, ypos, outer_radius);
-
-            middle_circle = new Circle();
-            middle_circle.init(xpos, ypos, middle_radius);
-
-            inner_circle = new Circle();
-            inner_circle.init(xpos, ypos, inner_radius);
+            outer_circle.init(xpos, ypos, outer_circle.radius);
+            middle_circle.init(xpos, ypos, middle_circle.radius);
+            inner_circle.init(xpos, ypos, inner_circle.radius);
         }
     }
 }
