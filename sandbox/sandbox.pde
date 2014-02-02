@@ -5,7 +5,7 @@ void setup() {
     size(800, 600);
     background(240);
     smooth();
-    rosette = new Rosette(16,4);
+    rosette = new Rosette(12,2);
     rosette.construct();
     rosette.draw();
 }

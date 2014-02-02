@@ -160,9 +160,9 @@ class Rosette {
     void get_intersections_between_rays() {
         for (int i=0; i<num_petals; i++) {
 
-            int line1 = indices_of_diagonal_lines[(16+(i-1))%16];
+            int line1 = indices_of_diagonal_lines[(num_petals+(i-1))%num_petals];
             //if(i==0) lines[line1].draw(color(255,0,0));
-            int line2 = indices_of_diagonal_lines[(16+(i-1))%16 + 16];
+            int line2 = indices_of_diagonal_lines[(num_petals+(i-1))%num_petals + num_petals];
             //if(i==0) lines[line2].draw(color(255,0,0));
             float[] intersection = get_intersection_of_lines(lines[line1].x1, 
             lines[line1].y1, 
@@ -178,8 +178,8 @@ class Rosette {
             //THESE MIGHT BE BACKWARDS
             petal_diamonds[i].diamond_left_x = intersection[0];
             petal_diamonds[i].diamond_left_y = intersection[1];           
-            petal_diamonds[(16+i-1)%16].diamond_right_x = intersection[0];
-            petal_diamonds[(16+i-1)%16].diamond_right_y = intersection[1];
+            petal_diamonds[(num_petals+i-1)%num_petals].diamond_right_x = intersection[0];
+            petal_diamonds[(num_petals+i-1)%num_petals].diamond_right_y = intersection[1];
            // if (i==0) ellipse(intersection[0], intersection[1], 12, 12);
             // println(intersection);
         }
@@ -347,15 +347,15 @@ class Rosette {
                 }
             }
             //these are top right and top left of petals - which is which?
-            if (j < 16) {
+            if (j < num_petals) {
                 petal_diamonds[j].petal_right_outer_x = closest_x;
                 petal_diamonds[j].petal_right_outer_y = closest_y;
             }
             else {
                 //have to add 2 here so the intersection will be associated with the right diamond 
                 //(has to do with the order in which the diagonal lines were drawn)
-                petal_diamonds[(j+2)%16].petal_left_outer_x = closest_x;
-                petal_diamonds[(j+2)%16].petal_left_outer_y = closest_y;
+                petal_diamonds[(j+2)%num_petals].petal_left_outer_x = closest_x;
+                petal_diamonds[(j+2)%num_petals].petal_left_outer_y = closest_y;
             }
 
 
