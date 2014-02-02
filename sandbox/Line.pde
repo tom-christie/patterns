@@ -8,6 +8,8 @@ class Line{
     
     float x1, y1, x2, y2;
     
+    float[][] intersections;
+    
     Line(){ 
     }
     
@@ -16,15 +18,36 @@ class Line{
         y1 = _y1;
         x2 = _x2;
         y2 = _y2;
+        
+        intersections = new float[50][2];
+        
     }
+    
+    void sort_intersections(){
+        
+        
+    }
+    
     
     void draw(){
         pushMatrix();
+        smooth();
         stroke(0);
         strokeWeight(1);
         line(x1,y1,x2,y2);
         popMatrix();
     }
+
+    void draw(color c){
+        pushMatrix();
+        smooth();
+        stroke(c);
+        strokeWeight(10);
+        line(x1,y1,x2,y2);
+        popMatrix();
+    }
+    
+
     
 }
 
