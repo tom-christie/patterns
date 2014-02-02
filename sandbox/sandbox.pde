@@ -1,11 +1,17 @@
+//to do
+// - make it so you can select how far into external lines the petal tips go
+// - fix issue with (12,3) [or any (even,odd)] where petals stop at FIRST contact rather than the actual line they should be contacting
+// - fix interaction issue where (12,5), (16,6), etc is fucked up - problem is that the inner circle radii are switched, so should account for this
+// - TILE THE PLANE!
+
 Rosette rosette;
 
 void setup() {
 
-    size(800, 600);
+    size(1200, 800);
     background(240);
     smooth();
-    rosette = new Rosette(12,2);
+    rosette = new Rosette(16,14,0);// max is ~60 at this point
 
 }
 

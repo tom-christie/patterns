@@ -18,16 +18,15 @@ class Rosette {
     int indices_of_radial_lines_count;
     int indices_of_diagonal_lines_count;
     int indices_of_diagonal_extensions_count;
-    //fundamental constructs for a single rosette
 
     int connect_every_n;
     int num_petals;
+    int petal_extent; //how far out the petal goes into the outer lines
 
     //points on the radius of the circle
-    float[] external_points_x = new float[40];
-    float[] external_points_y = new float[40];
+    float[] external_points_x = new float[400];
+    float[] external_points_y = new float[400];
     int external_points_count;
-
 
     float inner_radius;
     float middle_radius;
@@ -43,14 +42,19 @@ class Rosette {
     int outer_lines_intersections_count;
 
 
-    Rosette(int _num_petals, int _connect_every_n) {
+    ////////////////////////////////////////////////////////////////////////
+    ///////////////////////////// Initialization ///////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+
+    Rosette(int _num_petals, int _connect_every_n, int _petal_extent) {
 
         num_petals = _num_petals;
         connect_every_n = _connect_every_n;
-        
+        petal_extent = _petal_extent;
+
         xpos = width/2;
         ypos = height/2;
-        
+
         inner_radius = 42;
         middle_radius = 100;
         outer_radius = 200;
@@ -63,30 +67,29 @@ class Rosette {
 
         inner_circle = new Circle();
         inner_circle.init(xpos, ypos, inner_radius);
-
     }
 
 
     void construct() {
 
-        lines = new Line[100];
+        lines = new Line[1000];
         lines_count = 0;
 
-        indices_of_external_lines = new int[50];
-        indices_of_radial_lines = new int[50];
-        indices_of_diagonal_lines = new int[50];
-        indices_of_diagonal_extensions = new int[50];
+        indices_of_external_lines = new int[500];
+        indices_of_radial_lines = new int[500];
+        indices_of_diagonal_lines = new int[500];
+        indices_of_diagonal_extensions = new int[500];
         indices_of_external_lines_count = 0;
         indices_of_radial_lines_count = 0;
         indices_of_diagonal_lines_count = 0;
         indices_of_diagonal_extensions_count = 0;
 
-        middle_circle_intersections_x = new float[50];
-        middle_circle_intersections_y = new float[50];
-        inner_circle_intersections_x = new float[50];
-        inner_circle_intersections_y = new float[50];
-        outer_lines_intersections_x = new float[200];
-        outer_lines_intersections_y = new float[200];
+        middle_circle_intersections_x = new float[500];
+        middle_circle_intersections_y = new float[500];
+        inner_circle_intersections_x = new float[500];
+        inner_circle_intersections_y = new float[500];
+        outer_lines_intersections_x = new float[2000];
+        outer_lines_intersections_y = new float[2000];
         outer_lines_intersections_count = 0;
 
         petal_diamonds = new PetalDiamond[num_petals];
@@ -106,17 +109,14 @@ class Rosette {
 
         //calculate intersections between radial lines and inner circles
         get_circle_line_intersections();
-        //        
-        //        //create bottom 2/3 of petals
+        //create bottom 2/3 of petals
         connect_intersections_between_circles();
-        //        //        
-        //        //        //get top corners of petals
+
+        //get top corner of petals
         get_intersections_between_rays_and_outer_lines();
 
         //get bottom point of petals
         get_intersections_between_rays();
-
-        //
         get_outer_lines_intersections();
 
         //get tip of petal
@@ -124,26 +124,27 @@ class Rosette {
     }
 
 
+    ////////////////////////////////////////////////////////////////////////
+    ///////////////////////////// Drawing //////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+
     void draw() {
 
         outer_circle.draw();
         inner_circle.draw();
         middle_circle.draw();
+        
         //draw all lines
         for (int i=0; i<lines_count; i++) {
             lines[i].draw();
         }
 
-        //draw rosette lines
         draw_rosette_lines();
-
         draw_petals_and_diamonds();
         draw_star();
         
         mouseOver();
     }
-
-
 
     void draw_petals_and_diamonds() {
 
@@ -155,7 +156,7 @@ class Rosette {
 
     void draw_star() {
         beginShape();
-        fill(255,100);
+        fill(255, 100);
         for (int i=0; i<num_petals; i++) {
             vertex( petal_diamonds[i].diamond_inner_x, petal_diamonds[i].diamond_inner_y);
             vertex( petal_diamonds[i].diamond_right_x, petal_diamonds[i].diamond_right_y);
@@ -163,13 +164,28 @@ class Rosette {
         endShape();
     }
 
+
+    void draw_rosette_lines() {
+        for (int i=0; i<indices_of_diagonal_lines_count; i++) {
+            int index = indices_of_diagonal_lines[i];
+            lines[index].draw();
+        }
+        for (int i=0; i<indices_of_diagonal_extensions_count; i++) {
+            int index = indices_of_diagonal_extensions[i];
+            lines[index].draw();
+        }
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////
+    ///////////////////////////// Construction /////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+
     void get_intersections_between_rays() {
         for (int i=0; i<num_petals; i++) {
 
             int line1 = indices_of_diagonal_lines[(num_petals+(i-1))%num_petals];
-            //if(i==0) lines[line1].draw(color(255,0,0));
             int line2 = indices_of_diagonal_lines[(num_petals+(i-1))%num_petals + num_petals];
-            //if(i==0) lines[line2].draw(color(255,0,0));
             float[] intersection = get_intersection_of_lines(lines[line1].x1, 
             lines[line1].y1, 
             lines[line1].x2, 
@@ -186,8 +202,6 @@ class Rosette {
             petal_diamonds[i].diamond_left_y = intersection[1];           
             petal_diamonds[(num_petals+i-1)%num_petals].diamond_right_x = intersection[0];
             petal_diamonds[(num_petals+i-1)%num_petals].diamond_right_y = intersection[1];
-           // if (i==0) ellipse(intersection[0], intersection[1], 12, 12);
-            // println(intersection);
         }
     }
 
@@ -202,12 +216,11 @@ class Rosette {
             float y_right = petal_diamonds[i].petal_right_outer_y;
             angle_left = atan2((y_left-ypos), (x_left-xpos));
             angle_right = atan2( (y_right-ypos), (x_right-xpos));
-            //println(angle_left + " " + angle_right);
 
             //hold results to sort
-            float[] distances = new float[100];
-            float[] xcoords = new float[100];
-            float[] ycoords = new float[100];
+            float[] distances = new float[1000];
+            float[] xcoords = new float[1000];
+            float[] ycoords = new float[1000];
             int num_points = 0;
 
             //go through outer line intersections, and find the closest (eventually nth closest) one to the center
@@ -248,7 +261,6 @@ class Rosette {
             petal_diamonds[i].petal_outer_x = xcoords[0];
             petal_diamonds[i].petal_outer_y = ycoords[0];
             fill(255, 0, 0);
-            //if(i==0)ellipse(xcoords[0],ycoords[0],10,10);
         }
     }
 
@@ -275,70 +287,6 @@ class Rosette {
             }
         }
     }
-
-
-
-
-    void mouseOver() {
-
-        float d = get_dist(mouseX, mouseY,xpos,ypos);
-        color circle_color;
-        if ( d < mouse_radius ) {
-            circle_color = color(220, 87, 21);
-            mouse_hovering = true;
-        pushMatrix();
-        fill(circle_color);
-        stroke(circle_color);
-        ellipse(xpos,ypos,10,10);
-        popMatrix();
-        }
-        else { 
-            circle_color = color(0);
-            mouse_hovering = false;
-        }
-
-    }
-
-
-    void change_circle_size() {
-
-        inner_circle.check_size_change();
-        middle_circle.check_size_change();
-        outer_circle.check_size_change();
-        
-        if(mouse_hovering && get_dist(mouseX,mouseY,xpos,ypos) < mouse_radius){
-           
-            ellipse(xpos,ypos,10,10);
-            xpos = mouseX;
-            ypos = mouseY;
-            
-            
-                    outer_circle = new Circle();
-        outer_circle.init(xpos, ypos, outer_radius);
-
-        middle_circle = new Circle();
-        middle_circle.init(xpos, ypos, middle_radius);
-
-        inner_circle = new Circle();
-        inner_circle.init(xpos, ypos, inner_radius);
-
-            
-            
-            
-        }
-    }
-
-    void draw_rosette_lines() {
-        for (int i=0; i<indices_of_diagonal_lines_count; i++) {
-            int index = indices_of_diagonal_lines[i];
-            lines[index].draw();
-        }
-        for (int i=0; i<indices_of_diagonal_extensions_count; i++) {
-            int index = indices_of_diagonal_extensions[i];
-            lines[index].draw();
-        }
-    }
-
 
 
     void get_intersections_between_rays_and_outer_lines() {
@@ -368,12 +316,6 @@ class Rosette {
                 target_y = Ay1;
             }   
 
-            //put a red dot where the target is
-            //            stroke(255,0,0);
-            //            fill(255, 0, 0);
-            //            ellipseMode(CENTER);
-            //            ellipse(target_x, target_y, 8, 8);
-
             //find intersections with all external lines
             for (int i=0; i<indices_of_external_lines_count; i++) {
                 float Bx1 = lines[indices_of_external_lines[i]].x1;
@@ -402,43 +344,6 @@ class Rosette {
                 petal_diamonds[(j+2)%num_petals].petal_left_outer_x = closest_x;
                 petal_diamonds[(j+2)%num_petals].petal_left_outer_y = closest_y;
             }
-
-
-            //for each petal, get the points
-            for (int k=0; k<1; k++) {
-
-                //get angle from inner left/right points to center
-
-                    //if angle of outer points is BETWEEN these, then this is a candidate petal 
-                //be sure to account for 2PI-0 wraparound!
-
-                //if angle is closer to left, it's outer left, otherwise inner left
-                //
-                //                pushMatrix();
-                //                ellipseMode(CENTER);
-                //                fill(0, 255, 255);
-                //                stroke(0, 255, 255);
-                //                ellipse(petal_diamonds[k].petal_left_inner_x, petal_diamonds[k].petal_left_inner_y, 8, 8);
-                //                stroke(0, 255, 0);
-                //                fill(0, 255, 0);
-                //                ellipse(petal_diamonds[k].petal_right_inner_x, petal_diamonds[k].petal_right_inner_y, 8, 8);
-                //
-                //
-                //
-                //                fill(255, 0, 0);
-                //                ellipse(petal_diamonds[k].petal_left_outer_x, petal_diamonds[k].petal_left_outer_y, 8, 8);
-                //                fill(255, 255, 255);
-                //                ellipse(petal_diamonds[k].petal_right_outer_x, petal_diamonds[k].petal_right_outer_y, 8, 8);
-
-                //    popMatrix();
-
-                //            
-                // float petal_right_outer_x;
-                // float petal_right_outer_y;
-            }
-
-
-
 
             //make new line between A and B points
             lines[lines_count] = new Line();
@@ -473,25 +378,7 @@ class Rosette {
     }
 
 
-
-
-
-
     void get_circle_line_intersections() {
-
-
-        //        //between outer lines and other outer lines
-        //        for (int i=0; i<indices_of_external_lines_count; i++) {
-        //            for (int j=0; i<indices_of_external_lines_count; i++) {
-        //
-        //                //for each i line, find interesction with j line
-        //                println(indices_of_external_lines);
-        //            }
-        //        }
-        //
-        //
-
-
 
 
         //between lines and middle circle - just every so many radians, 
@@ -502,12 +389,6 @@ class Rosette {
             inner_circle_intersections_x[i] = inner_circle.radius*cos(d_rad*i) + xpos;   
             inner_circle_intersections_y[i] = inner_circle.radius*sin(d_rad*i) + ypos;
 
-            //            pushMatrix();
-            //            ellipseMode(CENTER);
-            //            fill(0, 0, 255);
-            //            stroke(0, 0, 255);
-            //            ellipse(middle_circle_intersections_x[i], middle_circle_intersections_y[i], 4, 4);
-            //            popMatrix();
             //this is both diamond top and petal bottom right - DONT KNOW IF i IS RIGHT, and petal bottom left of the NEXT petal
             petal_diamonds[i].diamond_outer_x = middle_circle_intersections_x[i];
             petal_diamonds[i].diamond_outer_y = middle_circle_intersections_y[i];
@@ -516,12 +397,6 @@ class Rosette {
             petal_diamonds[(i+1)%num_petals].petal_left_inner_x = middle_circle_intersections_x[i];
             petal_diamonds[(i+1)%num_petals].petal_left_inner_y = middle_circle_intersections_y[i];            
 
-            //            pushMatrix();
-            //            ellipseMode(CENTER);
-            //            fill(0, 0, 255);
-            //            stroke(0, 0, 255);
-            //            ellipse(inner_circle_intersections_x[i], inner_circle_intersections_y[i], 4, 4);
-            //            popMatrix();
             //these are the bottom of the diamonds
             petal_diamonds[i].diamond_inner_x = inner_circle_intersections_x[i];
             petal_diamonds[i].diamond_inner_y = inner_circle_intersections_y[i];
@@ -567,6 +442,50 @@ class Rosette {
             external_points_y[(i+_count)%external_points_count]);
             indices_of_external_lines[indices_of_external_lines_count++] = lines_count;
             lines_count++;
+        }
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////
+    ///////////////////////////// Interaction/ /////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+
+    void mouseOver() {
+
+        float d = get_dist(mouseX, mouseY, xpos, ypos);
+        color circle_color;
+        if ( d < mouse_radius ) {
+            circle_color = color(220, 87, 21);
+            mouse_hovering = true;
+            pushMatrix();
+            fill(circle_color);
+            stroke(circle_color);
+            ellipse(xpos, ypos, 10, 10);
+            popMatrix();
+        }
+    }
+
+    void change_circle_size() {
+
+        inner_circle.check_size_change();
+        middle_circle.check_size_change();
+        outer_circle.check_size_change();
+
+        if (mouse_hovering && get_dist(mouseX, mouseY, xpos, ypos) < mouse_radius) {
+
+            ellipse(xpos, ypos, 10, 10);
+            xpos = mouseX;
+            ypos = mouseY;
+
+
+            outer_circle = new Circle();
+            outer_circle.init(xpos, ypos, outer_radius);
+
+            middle_circle = new Circle();
+            middle_circle.init(xpos, ypos, middle_radius);
+
+            inner_circle = new Circle();
+            inner_circle.init(xpos, ypos, inner_radius);
         }
     }
 }
