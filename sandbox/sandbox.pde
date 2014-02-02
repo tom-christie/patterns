@@ -6,9 +6,16 @@ void setup() {
     background(240);
     smooth();
     rosette = new Rosette(12,2);
-    rosette.construct();
-    rosette.draw();
+
 }
+
+void draw(){
+    background(240);
+     rosette.construct();
+    rosette.draw();   
+    
+}
+
 
 float get_dist(float x1, float y1, float x2, float y2) {
     return sqrt( pow(x1-x2, 2) + pow(y1-y2, 2)  );

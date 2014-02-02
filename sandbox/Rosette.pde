@@ -7,6 +7,8 @@ class Rosette {
     int lines_count;  //actually count-1, i.e. index of last one
     float xpos, ypos;
     float d_rad;
+    boolean mouse_hovering;
+    float mouse_radius = 10;
 
     int[] indices_of_external_lines;
     int[] indices_of_radial_lines;
@@ -45,13 +47,27 @@ class Rosette {
 
         num_petals = _num_petals;
         connect_every_n = _connect_every_n;
+        
+        xpos = width/2;
+        ypos = height/2;
+        
+        inner_radius = 42;
+        middle_radius = 100;
+        outer_radius = 200;
+
+        outer_circle = new Circle();
+        outer_circle.init(xpos, ypos, outer_radius);
+
+        middle_circle = new Circle();
+        middle_circle.init(xpos, ypos, middle_radius);
+
+        inner_circle = new Circle();
+        inner_circle.init(xpos, ypos, inner_radius);
+
     }
 
 
     void construct() {
-
-        xpos = width/2;
-        ypos = height/2;
 
         lines = new Line[100];
         lines_count = 0;
@@ -72,18 +88,6 @@ class Rosette {
         outer_lines_intersections_x = new float[200];
         outer_lines_intersections_y = new float[200];
         outer_lines_intersections_count = 0;
-        inner_radius = 42;
-        middle_radius = 100;
-        outer_radius = 200;
-
-        outer_circle = new Circle();
-        outer_circle.init(xpos, ypos, outer_radius);
-
-        middle_circle = new Circle();
-        middle_circle.init(xpos, ypos, middle_radius);
-
-        inner_circle = new Circle();
-        inner_circle.init(xpos, ypos, inner_radius);
 
         petal_diamonds = new PetalDiamond[num_petals];
         for (int i=0; i<num_petals; i++) {
@@ -135,6 +139,8 @@ class Rosette {
 
         draw_petals_and_diamonds();
         draw_star();
+        
+        mouseOver();
     }
 
 
@@ -199,9 +205,9 @@ class Rosette {
             //println(angle_left + " " + angle_right);
 
             //hold results to sort
-            float[] distances = new float[10];
-            float[] xcoords = new float[10];
-            float[] ycoords = new float[10];
+            float[] distances = new float[100];
+            float[] xcoords = new float[100];
+            float[] ycoords = new float[100];
             int num_points = 0;
 
             //go through outer line intersections, and find the closest (eventually nth closest) one to the center
@@ -273,7 +279,25 @@ class Rosette {
 
 
 
+    void mouseOver() {
 
+        float d = get_dist(mouseX, mouseY,xpos,ypos);
+        color circle_color;
+        if ( d < mouse_radius ) {
+            circle_color = color(220, 87, 21);
+            mouse_hovering = true;
+        pushMatrix();
+        fill(circle_color);
+        stroke(circle_color);
+        ellipse(xpos,ypos,10,10);
+        popMatrix();
+        }
+        else { 
+            circle_color = color(0);
+            mouse_hovering = false;
+        }
+
+    }
 
 
     void change_circle_size() {
@@ -281,6 +305,27 @@ class Rosette {
         inner_circle.check_size_change();
         middle_circle.check_size_change();
         outer_circle.check_size_change();
+        
+        if(mouse_hovering && get_dist(mouseX,mouseY,xpos,ypos) < mouse_radius){
+           
+            ellipse(xpos,ypos,10,10);
+            xpos = mouseX;
+            ypos = mouseY;
+            
+            
+                    outer_circle = new Circle();
+        outer_circle.init(xpos, ypos, outer_radius);
+
+        middle_circle = new Circle();
+        middle_circle.init(xpos, ypos, middle_radius);
+
+        inner_circle = new Circle();
+        inner_circle.init(xpos, ypos, inner_radius);
+
+            
+            
+            
+        }
     }
 
     void draw_rosette_lines() {
@@ -452,10 +497,10 @@ class Rosette {
         //between lines and middle circle - just every so many radians, 
         //but would really be done with circle/line intersection
         for (int i=0; i<external_points_count; i++) {
-            middle_circle_intersections_x[i] = middle_radius*cos(d_rad*i) + xpos;   
-            middle_circle_intersections_y[i] = middle_radius*sin(d_rad*i) + ypos; 
-            inner_circle_intersections_x[i] = inner_radius*cos(d_rad*i) + xpos;   
-            inner_circle_intersections_y[i] = inner_radius*sin(d_rad*i) + ypos;
+            middle_circle_intersections_x[i] = middle_circle.radius*cos(d_rad*i) + xpos;   
+            middle_circle_intersections_y[i] = middle_circle.radius*sin(d_rad*i) + ypos; 
+            inner_circle_intersections_x[i] = inner_circle.radius*cos(d_rad*i) + xpos;   
+            inner_circle_intersections_y[i] = inner_circle.radius*sin(d_rad*i) + ypos;
 
             //            pushMatrix();
             //            ellipseMode(CENTER);
