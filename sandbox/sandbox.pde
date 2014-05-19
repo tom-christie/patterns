@@ -8,10 +8,10 @@ Rosette rosette;
 
 void setup() {
 
-    size(1200, 800);
+    size(600, 600);
     background(240);
     smooth();
-    rosette = new Rosette(16,14,0);// max is ~60 at this point
+    rosette = new Rosette(16,4,0);// max is ~60 at this point
 
 }
 
